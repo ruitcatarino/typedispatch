@@ -1,3 +1,6 @@
+from collections import defaultdict
+
+
 class TypeDispatchError(Exception):
     """Custom exception for errors related to TypeDispatch."""
 
@@ -6,9 +9,9 @@ class TypeDispatchError(Exception):
 
 class TypeDispatch:
     def __init__(self):
-        self.registry = {}
+        self.registry = defaultdict(list)
 
-    def register(self, obj_type, func):
+    def register(self, obj_type, func, **predicate):
         """
         Register a type with a function.
         :param obj_type: The type (class) to be registered.
@@ -17,9 +20,9 @@ class TypeDispatch:
         if not isinstance(obj_type, type):
             raise TypeDispatchError(f"{obj_type} is not a valid type.")
 
-        self.registry[obj_type] = func
+        self.registry[obj_type].append((predicate, func))
 
-    def register_decorator(self, obj_type):
+    def register_decorator(self, obj_type, **predicate):
         """
         Register a function as a decorator for the given type.
         :param obj_type: The type (class) to register the function with.
@@ -27,12 +30,12 @@ class TypeDispatch:
         """
 
         def decorator(func):
-            self.register(obj_type, func)
+            self.register(obj_type, func, **predicate)
             return func
 
         return decorator
 
-    def lookup(self, obj):
+    def lookup(self, obj, **predicate):
         """
         Find and execute the function associated with the object's type.
         This method will check the object's type and iterate over the MRO
@@ -44,13 +47,31 @@ class TypeDispatch:
         """
         obj_type = type(obj)
         mro = obj_type.mro()
-
+        
         for cls in mro:
             if cls in self.registry:
-                return self.registry[cls](obj)
+                for registered_predicate, func in self.registry[cls]:
+                    if self._match_predicates(obj, predicate, registered_predicate):
+                        return func(obj)
         raise TypeDispatchError(
             f"No function found for type {obj_type} or its superclasses."
         )
+
+    def _match_predicates(self, obj, predicate, registered_predicate):
+        """
+        Check if all registered predicate match the given predicate.
+        :param obj: The object being looked up.
+        :param predicate: The object being looked up.
+        :param registered_predicate: Dictionary of predicates to match.
+        :return: True if predicate matches, False otherwise.
+        """
+        for registered_key, registered_value in registered_predicate.items():
+            if (
+                registered_key not in predicate
+                or predicate.get(registered_key) != registered_value
+            ):
+                return False
+        return True
 
     def is_registered(self, obj_type):
         """
