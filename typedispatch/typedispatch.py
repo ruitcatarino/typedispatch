@@ -47,7 +47,7 @@ class TypeDispatch:
         """
         obj_type = type(obj)
         mro = obj_type.mro()
-        
+
         for cls in mro:
             if cls in self.registry:
                 for registered_predicate, func in self.registry[cls]:
