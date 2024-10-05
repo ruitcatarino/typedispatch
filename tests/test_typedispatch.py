@@ -74,6 +74,53 @@ class TestTypeDispatch(unittest.TestCase):
 
         self.assertEqual(self.typedispatch.lookup(MyFloat(1.23)), "Handling float 1.23")
 
+    def test_predicate(self):
+        @self.typedispatch.register_decorator(int, a=True)
+        def handle_a_ints(x):
+            return f"A integer {x}"
+
+        @self.typedispatch.register_decorator(int, b=True)
+        def handle_b_ints(x):
+            return f"B integer {x}"
+        
+        @self.typedispatch.register_decorator(int, a=True, b=True)
+        def handle_a_b_ints(x):
+            return f"AB integer {x}"
+
+        self.assertEqual(self.typedispatch.lookup(2, a=True), "A integer 2")
+        self.assertEqual(self.typedispatch.lookup(2, b=True), "B integer 2")
+
+        with self.assertRaises(TypeDispatchError):
+            self.typedispatch.lookup(4)
+
+        with self.assertRaises(TypeDispatchError):
+            self.typedispatch.lookup(4, c=True)
+
+
+    def test_predicate_inheritance(self):
+        @self.typedispatch.register_decorator(int, a=True)
+        def handle_a_ints(x):
+            return f"A integer {x}"
+
+        @self.typedispatch.register_decorator(int, b=True)
+        def handle_b_ints(x):
+            return f"B integer {x}"
+        
+        class MyInt(int):
+            pass
+        
+        @self.typedispatch.register_decorator(MyInt, a=True)
+        def handle_a_myints(x):
+            return f"A MyInt {x}"
+        
+
+        self.assertEqual(self.typedispatch.lookup(2, a=True), "A integer 2")
+        self.assertEqual(self.typedispatch.lookup(2, b=True), "B integer 2")
+        self.assertEqual(self.typedispatch.lookup(MyInt(2), a=True), "A MyInt 2")
+        self.assertEqual(self.typedispatch.lookup(MyInt(2), b=True), "B integer 2")
+
+        with self.assertRaises(TypeDispatchError):
+            self.typedispatch.lookup(MyInt(2))
 
 if __name__ == "__main__":
     unittest.main()
