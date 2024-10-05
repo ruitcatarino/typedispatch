@@ -2,9 +2,8 @@ from setuptools import setup, find_packages
 
 setup(
     name="typedispatch",
-    version="0.2.0",
+    version="0.3.0",
     author="Rui Catarino",
-    description="TypeDispatch is a Python utility for registering and dispatching functions based on object types, supporting inheritance through method resolution order (MRO).",
     long_description=open("README.md", "r").read(),
     long_description_content_type="text/markdown",
     url="https://github.com/ruitcatarino/typedispatch",
