@@ -120,6 +120,16 @@ class TestTypeDispatch(unittest.TestCase):
         with self.assertRaises(TypeDispatchError):
             self.typedispatch.lookup(MyInt(2))
 
+    def test_none_value_predicate(self):
+        self.typedispatch.register(int, lambda x: f"Integer {x}", is_value=None)
+        self.assertEqual(self.typedispatch.lookup(2, is_value=None), "Integer 2")
+
+        with self.assertRaises(TypeDispatchError):
+            self.typedispatch.lookup(2, is_value=True)
+
+        with self.assertRaises(TypeDispatchError):
+            self.typedispatch.lookup(2)
+
 
 if __name__ == "__main__":
     unittest.main()
