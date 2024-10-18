@@ -44,7 +44,7 @@ class TypeDispatch:
 
         return decorator
 
-    def lookup(self, obj: Any, **predicate: Any) -> Any:
+    def lookup(self, obj: Any, **predicate: Dict[str, Any]) -> Any:
         """
         Find and execute the function associated with the object's type.
         This method will check the object's type and iterate over the MRO
