@@ -31,7 +31,7 @@ class TestTypeDispatch(unittest.TestCase):
         self.assertFalse(self.typedispatch.is_registered(float))
 
     def test_register_decorator(self):
-        @self.typedispatch.register_decorator(int)
+        @self.typedispatch.register(int)
         def handle_int(x):
             return f"Handling integer {x}"
 
@@ -65,7 +65,7 @@ class TestTypeDispatch(unittest.TestCase):
         self.assertEqual(self.typedispatch.lookup(C()), "Handling A")
 
     def test_decorator_inheritance(self):
-        @self.typedispatch.register_decorator(float)
+        @self.typedispatch.register(float)
         def handle_float(x):
             return f"Handling float {x}"
 
@@ -75,15 +75,15 @@ class TestTypeDispatch(unittest.TestCase):
         self.assertEqual(self.typedispatch.lookup(MyFloat(1.23)), "Handling float 1.23")
 
     def test_predicate(self):
-        @self.typedispatch.register_decorator(int, a=True)
+        @self.typedispatch.register(int, a=True)
         def handle_a_ints(x):
             return f"A integer {x}"
 
-        @self.typedispatch.register_decorator(int, b=True)
+        @self.typedispatch.register(int, b=True)
         def handle_b_ints(x):
             return f"B integer {x}"
 
-        @self.typedispatch.register_decorator(int, a=True, b=True)
+        @self.typedispatch.register(int, a=True, b=True)
         def handle_a_b_ints(x):
             return f"AB integer {x}"
 
@@ -97,18 +97,18 @@ class TestTypeDispatch(unittest.TestCase):
             self.typedispatch.lookup(4, c=True)
 
     def test_predicate_inheritance(self):
-        @self.typedispatch.register_decorator(int, a=True)
+        @self.typedispatch.register(int, a=True)
         def handle_a_ints(x):
             return f"A integer {x}"
 
-        @self.typedispatch.register_decorator(int, b=True)
+        @self.typedispatch.register(int, b=True)
         def handle_b_ints(x):
             return f"B integer {x}"
 
         class MyInt(int):
             pass
 
-        @self.typedispatch.register_decorator(MyInt, a=True)
+        @self.typedispatch.register(MyInt, a=True)
         def handle_a_myints(x):
             return f"A MyInt {x}"
 
@@ -145,6 +145,24 @@ class TestTypeDispatch(unittest.TestCase):
 
         with self.assertRaises(TypeDispatchError):
             self.typedispatch.lookup(2, another_value=None), "Integer 2"
+
+    def test_decorator_and_non_decorator(self):
+        self.typedispatch.register(int, lambda x: f"Even Integer {x}", is_even=True)
+
+        @self.typedispatch.register(int, is_even=False)
+        def handle_odds_ints(x):
+            return f"Odd Integer {x}"
+
+        odd_number = 5
+        even_number = 60
+        self.assertEqual(
+            self.typedispatch.lookup(odd_number, is_even=odd_number % 2 == 0),
+            f"Odd Integer {odd_number}",
+        )
+        self.assertEqual(
+            self.typedispatch.lookup(even_number, is_even=even_number % 2 == 0),
+            f"Even Integer {even_number}",
+        )
 
 
 if __name__ == "__main__":
