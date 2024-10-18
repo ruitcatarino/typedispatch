@@ -130,6 +130,22 @@ class TestTypeDispatch(unittest.TestCase):
         with self.assertRaises(TypeDispatchError):
             self.typedispatch.lookup(2)
 
+    def test_not_registered_key_predicate(self):
+        self.typedispatch.register(int, lambda x: f"Integer {x}")
+        self.typedispatch.register(
+            int, lambda x: f"Specific Integer {x}", specific_value=True
+        )
+        self.assertEqual(self.typedispatch.lookup(2), "Integer 2")
+        self.assertEqual(
+            self.typedispatch.lookup(2, specific_value=True), "Specific Integer 2"
+        )
+
+        with self.assertRaises(TypeDispatchError):
+            self.typedispatch.lookup(2, some_value=True), "Integer 2"
+
+        with self.assertRaises(TypeDispatchError):
+            self.typedispatch.lookup(2, another_value=None), "Integer 2"
+
 
 if __name__ == "__main__":
     unittest.main()
