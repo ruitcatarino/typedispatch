@@ -75,9 +75,8 @@ class TypeDispatch:
         :param registered_predicate: Dictionary of predicates to match.
         :return: True if predicate matches, False otherwise.
         """
-        return all(
-            key in predicate and predicate.get(key) == value
-            for key, value in registered_predicate.items()
+        return predicate.keys() == registered_predicate.keys() and all(
+            predicate[key] == value for key, value in registered_predicate.items()
         )
 
     def is_registered(self, obj_type: Type) -> bool:
