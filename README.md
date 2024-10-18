@@ -40,11 +40,11 @@ from typedispatch import TypeDispatch
 
 typedispatch = TypeDispatch()
 
-@typedispatch.register_decorator(int)
+@typedispatch.register(int)
 def handle_integer(x):
     return f"Handling integer: {x}"
 
-@typedispatch.register_decorator(str)
+@typedispatch.register(str)
 def handle_string(x):
     return f"Handling string: {x}"
 
@@ -70,18 +70,18 @@ print(typedispatch.lookup(MyList([1, 2, 3])))  # Output: List of length 3
 You can use predicates to further refine the dispatch logic:
 
 ```python
-@typedispatch.register_decorator(int, a=True)
+@typedispatch.register(int, a=True)
 def handle_a_ints(x):
     return f"A integer {x}"
 
-@typedispatch.register_decorator(int, b=True)
+@typedispatch.register(int, b=True)
 def handle_b_ints(x):
     return f"B integer {x}"
 
 class MyInt(int):
     pass
 
-@typedispatch.register_decorator(MyInt, a=True)
+@typedispatch.register(MyInt, a=True)
 def handle_a_myints(x):
     return f"A MyInt {x}"
 
@@ -106,10 +106,11 @@ except TypeDispatchError as e:
 
 ### `TypeDispatch`
 
-- `register(obj_type, func, **predicate)`: Register a function for a specific type with optional predicates.
-- `register_decorator(obj_type, **predicate)`: Decorator for registering functions.
-- `lookup(obj, **predicate)`: Find and execute the function associated with the object's type and predicates.
-- `is_registered(obj_type)`: Check if a type or any of its superclasses is registered.
+- `register(obj_type: Type, func: Callable = None, **predicate: Any) -> Callable`: Register a function for a specific type. If called with a function, it registers it immediately; if called with only a type, it returns a decorator for registering functions.
+
+- `lookup(obj: Any, **predicate: Dict[str, Any]) -> Any`: Find and execute the function associated with the object's type and optional predicates.
+
+- `is_registered(obj_type: Type) -> bool`: Check if a type or any of its superclasses is registered in the TypeDispatch.
 
 ### Exceptions
 

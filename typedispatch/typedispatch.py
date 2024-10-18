@@ -15,34 +15,34 @@ class TypeDispatch:
             list
         )
 
-    def register(self, obj_type: Type, func: Callable, **predicate: Any) -> None:
+    def register(
+        self, obj_type: Type, func: Callable = None, **predicate: Any
+    ) -> Callable:
         """
         Register a type with a function.
+        If called with a function, it registers it immediately.
+        If called with only the type, it returns a decorator.
+
         :param obj_type: The type (class) to be registered.
         :param func: The function to be associated with this type.
+        :return: A decorator if no function is provided, otherwise None.
         """
         if not isinstance(obj_type, type):
             raise TypeDispatchError(f"{obj_type} is not a valid type.")
 
+        if func is None:
+
+            def decorator(func: Callable) -> Callable:
+                @wraps(func)
+                def wrapped_func(*args, **kwargs):
+                    return func(*args, **kwargs)
+
+                self.register(obj_type, wrapped_func, **predicate)
+                return wrapped_func
+
+            return decorator
+
         self.registry[obj_type].append((predicate, func))
-
-    def register_decorator(self, obj_type: Type, **predicate: Any) -> Callable:
-        """
-        Register a function as a decorator for the given type.
-        :param obj_type: The type (class) to register the function with.
-        :param predicate: Optional predicates to match when dispatching.
-        :return: A decorator that registers the function for the given type.
-        """
-
-        def decorator(func: Callable) -> Callable:
-            @wraps(func)
-            def wrapped_func(*args, **kwargs):
-                return func(*args, **kwargs)
-
-            self.register(obj_type, func, **predicate)
-            return wrapped_func
-
-        return decorator
 
     def lookup(self, obj: Any, **predicate: Dict[str, Any]) -> Any:
         """
