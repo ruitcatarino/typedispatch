@@ -1,6 +1,6 @@
 from collections import defaultdict
-from typing import Callable, Type, Any, Dict, List, Tuple
 from functools import wraps
+from typing import Any, Callable, Dict, List, Optional, Tuple, Type
 
 
 class TypeDispatchError(Exception):

@@ -1,4 +1,5 @@
 import unittest
+
 from typedispatch import TypeDispatch, TypeDispatchError
 
 
