@@ -16,7 +16,7 @@ class TypeDispatch:
         )
 
     def register(
-        self, obj_type: Type, func: Callable = None, **predicate: Any
+        self, obj_type: Type, func: Optional[Callable] = None, **predicate: Any
     ) -> Callable:
         """
         Register a type with a function.
